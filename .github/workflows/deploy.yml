@@ -4,14 +4,12 @@ on: # what triggers the workflow
   push:
     branches: [main]
 
-permissions:
-  contents: read # read access to repository contents
-  pages: write # write access to GitHub Pages
-  id-token: write # write access to OpenID Connect tokens
 
 jobs:
   ci:
     runs-on: ubuntu-latest # short-lived virtual machine
+    permissions:
+      contents: read # read access to repository contents
     steps: # steps execute sequentially
       - name: Copy source code from repo into virtual machine
         uses: actions/checkout@v4
@@ -36,6 +34,9 @@ jobs:
   cd:
     needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      pages: write # write access to GitHub Pages
+      id-token: write # write access to OpenID Connect tokens
     environment:
       name: github-pages
     steps:
