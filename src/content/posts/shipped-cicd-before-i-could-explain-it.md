@@ -47,23 +47,25 @@ word.
 The machine running the job is destroyed when the job ends. Every
 build starts with an empty box — no code, no dependencies, not even
 the language runtime.
-
 Two jobs means two machines, and they never meet:
 
+```
 push to main
-│
-├── machine A ── fetch code
-│ install runtime
-│ install dependencies
-│ build
-│ upload output ──┐
-│ (destroyed) │
-│ ▼
-│ storage
-│ │
-└── machine B ── fetch output ◄──┘
-publish
-(destroyed)
+    |
+    +-- machine A -- fetch code
+    |                install runtime
+    |                install dependencies
+    |                build
+    |                upload output --+
+    |   (destroyed)                  |
+    |                                v
+    |                            storage
+    |                                |
+    +-- machine B -- fetch output <--+
+                     publish
+        (destroyed)
+```
+
 
 
 Once that lands, the rest stops being boilerplate. Fetching the code
