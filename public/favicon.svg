@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .paper { fill: #EBEDE8; } .ink { fill: #1B2430; }
+    @media (prefers-color-scheme: dark) { .paper { fill: #161B21; } .ink { fill: #DFE3E0; } }
+  </style>
+  <rect class="ink" width="32" height="32" rx="6"/>
+  <rect class="paper" x="8" y="9" width="3" height="14"/>
+  <rect class="paper" x="14" y="10" width="11" height="2"/>
+  <rect class="paper" x="14" y="15" width="11" height="2"/>
+  <rect class="paper" x="14" y="20" width="7" height="2"/>
+</svg>

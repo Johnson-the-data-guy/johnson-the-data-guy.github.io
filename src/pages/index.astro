@@ -1,0 +1,12 @@
+---
+import EntryList from '../components/EntryList.astro';
+import Base from '../layouts/Base.astro';
+import { SHOW_DRAFTS, getPosts } from '../lib/content';
+import { SITE } from '../site';
+
+const posts = await getPosts({ drafts: SHOW_DRAFTS });
+---
+
+<Base description={SITE.description} section="entries">
+  <EntryList posts={posts} />
+</Base>

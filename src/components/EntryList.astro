@@ -1,0 +1,34 @@
+---
+import { KIND_LABELS, formatDate, isoDate, postUrl, type Post } from '../lib/content';
+
+interface Props {
+  posts: Post[];
+  /** 2 on the index; 3 where the list sits under its own h2. */
+  headingLevel?: 2 | 3;
+}
+
+const { posts, headingLevel = 2 } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+---
+
+{
+  posts.length === 0 ? (
+    <p class="empty">No entries yet.</p>
+  ) : (
+    <ol class="rows" role="list">
+      {posts.map((post) => (
+        <li class={`row entry kind-${post.data.kind}`}>
+          <Heading class="row-title">
+            <a href={postUrl(post)}>{post.data.title}</a>
+          </Heading>
+          <p class="row-text">{post.data.description}</p>
+          <p class="row-meta">
+            <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
+            <span>{KIND_LABELS[post.data.kind]}</span>
+            {post.data.draft && <span>Draft</span>}
+          </p>
+        </li>
+      ))}
+    </ol>
+  )
+}

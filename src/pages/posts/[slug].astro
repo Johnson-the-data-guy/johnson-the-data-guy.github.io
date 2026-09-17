@@ -1,0 +1,88 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import {
+  KIND_LABELS,
+  SHOW_DRAFTS,
+  formatDate,
+  getPosts,
+  getProjects,
+  isoDate,
+  projectUrl,
+  type Post,
+  type Project,
+} from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  // Draft posts only get a page under `astro dev`.
+  const posts = await getPosts({ drafts: SHOW_DRAFTS });
+  // Check slugs against every project, drafts included, so a typo fails the
+  // build even while the project is still a draft.
+  const projects = await getProjects({ drafts: true });
+
+  return posts.map((post) => {
+    const project = post.data.project
+      ? projects.find((candidate) => candidate.id === post.data.project)
+      : undefined;
+    if (post.data.project && !project) {
+      throw new Error(
+        `Post "${post.id}" names project "${post.data.project}", but no project has that slug.`,
+      );
+    }
+    // A draft project has no page in the build, so there is nothing to link to.
+    const linkedProject = project && (SHOW_DRAFTS || !project.data.draft) ? project : undefined;
+    return { params: { slug: post.id }, props: { post, project: linkedProject } };
+  });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  project: Project | undefined;
+}
+
+const { post, project } = Astro.props;
+const { title, description, date, tags, kind, draft } = post.data;
+const { Content } = await render(post);
+---
+
+<Base
+  title={title}
+  description={description}
+  type="article"
+  published={date}
+  tags={tags}
+  section="entries"
+>
+  <article class={`article kind-${kind}`}>
+    <header class="article-header">
+      <h1 class="article-title has-kind-rule">{title}</h1>
+      <p class="meta">
+        <span>{KIND_LABELS[kind]}</span>
+        <time datetime={isoDate(date)}>{formatDate(date, 'long')}</time>
+        {
+          project && (
+            <span>
+              Part of <a href={projectUrl(project)}>{project.data.title}</a>
+            </span>
+          )
+        }
+        {draft && <span>Draft</span>}
+      </p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      tags.length > 0 && (
+        <footer class="article-footer">
+          <p class="meta">
+            <span>Tagged {tags.join(', ')}</span>
+          </p>
+        </footer>
+      )
+    }
+  </article>
+</Base>

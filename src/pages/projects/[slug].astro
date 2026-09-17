@@ -1,0 +1,71 @@
+---
+import type { GetStaticPaths } from 'astro';
+import EntryList from '../../components/EntryList.astro';
+import Base from '../../layouts/Base.astro';
+import {
+  SHOW_DRAFTS,
+  STATUS_LABELS,
+  getPosts,
+  getProjects,
+  type Project,
+} from '../../lib/content';
+import { loadDiagram } from '../../lib/diagram';
+
+export const getStaticPaths = (async () => {
+  // Draft projects only get a page under `astro dev`.
+  const projects = await getProjects({ drafts: SHOW_DRAFTS });
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { title, company, summary, stack, repo, diagram, status, draft } = project.data;
+
+const posts = (await getPosts({ drafts: SHOW_DRAFTS })).filter(
+  (post) => post.data.project === project.id,
+);
+const diagramSvg = diagram ? await loadDiagram(diagram, `Architecture diagram: ${title}`) : null;
+
+const repoUrl = new URL(repo);
+const repoLabel = `${repoUrl.host}${repoUrl.pathname}`.replace(/\/$/, '');
+---
+
+<Base title={title} description={summary} section="projects">
+  <article class="article project">
+    <header class="article-header">
+      <h1 class="article-title">{title}</h1>
+      <p class="meta">
+        <span>{company}</span>
+        <span>{STATUS_LABELS[status]}</span>
+        {draft && <span>Draft</span>}
+      </p>
+    </header>
+
+    <p class="summary">{summary}</p>
+
+    <dl class="facts">
+      <div>
+        <dt>Stack</dt>
+        <dd>
+          <ul class="stack" role="list">
+            {stack.map((item) => <li>{item}</li>)}
+          </ul>
+        </dd>
+      </div>
+      <div>
+        <dt>Repository</dt>
+        <dd><a href={repo}>{repoLabel}</a></dd>
+      </div>
+    </dl>
+
+    {diagramSvg && <figure class="diagram" set:html={diagramSvg} />}
+
+    <section class="project-entries" aria-labelledby="entries-heading">
+      <h2 id="entries-heading" class="section-title">Entries</h2>
+      <EntryList posts={posts} headingLevel={3} />
+    </section>
+  </article>
+</Base>
